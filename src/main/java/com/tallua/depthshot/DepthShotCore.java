@@ -2,16 +2,9 @@ package com.tallua.depthshot;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.*;
 
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
-
-import com.tallua.depthshot.client.*;
 
 public class DepthShotCore {
 

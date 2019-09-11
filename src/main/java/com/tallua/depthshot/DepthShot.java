@@ -1,17 +1,16 @@
 package com.tallua.depthshot;
 
+import com.tallua.depthshot.client.FrameCaptureKeyHandler;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.init.Blocks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
-import com.tallua.depthshot.client.FrameCaptureKeyHandler;
 
 import org.apache.logging.log4j.Logger;
 

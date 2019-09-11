@@ -1,12 +1,9 @@
 package com.tallua.depthshot.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.init.Blocks;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+
+import com.tallua.depthshot.DepthShotCore;
+
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.vector.Quaternion;
@@ -32,11 +29,12 @@ class FrameCapturer
     {
         
         // get framebuffer
-        Framebuffer fb = Minecraft.getMinecraft().getFramebuffer();
-        int frameBufferId = fb.framebufferObject;
+        Framebuffer frame = DepthShotCore.mc.getFramebuffer();
+        int frameBufferId = frame.framebufferObject;
+        
 
         // get depthbuffer
-        int depthBufferId = fb.depthBuffer;
+        int depthBufferId = frame.depthBuffer;
 
         // save to file
         // [mandatory] need path, seed, player loc, player angle
