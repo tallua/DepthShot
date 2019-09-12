@@ -1,11 +1,6 @@
 package com.tallua.depthshot;
 
-import com.tallua.depthshot.client.FrameCaptureKeyHandler;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -24,8 +19,8 @@ public class DepthShot {
     private static Logger logger;
 
     @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-
+    public void preInit(FMLPreInitializationEvent event) 
+    {
         mc = Minecraft.getMinecraft();
         logger = event.getModLog();
 
@@ -35,18 +30,12 @@ public class DepthShot {
         logger.info("ds : Loading configs");
         DepthShotCore.loadConfigs();
 
-        if (DepthShotCore.isClient) {
-            if (DepthShotCore.capturekey != null) {
-                KeyBinding capturekey = DepthShotCore.capturekey;
-                logger.info("ds : Add caputerkey : " + capturekey.getKeyCode());
-
-                ClientRegistry.registerKeyBinding(DepthShotCore.capturekey);
-                MinecraftForge.EVENT_BUS.register(new FrameCaptureKeyHandler());
-            }
-        }
-
         
-
+        if(DepthShotCore.isClient)
+        {
+            logger.info("ds : Registering client events");
+            DepthShotCore.registerEvents();
+        }
     }
 
     @EventHandler

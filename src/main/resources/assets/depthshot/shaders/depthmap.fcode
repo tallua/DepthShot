@@ -1,0 +1,4 @@
+
+float depth = sqrt(eyePos.x * eyePos.x + eyePos.y * eyePos.y + eyePos.z * eyePos.z);
+depth = depth / 255;
+gl_FragData[0] = vec4(depth, depth, depth, 1.0);

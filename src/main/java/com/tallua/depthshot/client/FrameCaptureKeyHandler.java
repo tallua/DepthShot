@@ -15,9 +15,10 @@ public class FrameCaptureKeyHandler
         if (DepthShotCore.capturekey.isPressed())
         {
             DepthShotCore.logger.info("capture key pressed");
-            FrameCapturer fc = new FrameCapturer();
-
-            fc.capture();
+            if(DepthShotCore.captureHandler != null)
+            {
+                DepthShotCore.captureHandler.doCapture();
+            }
         }
     }
     
