@@ -46,7 +46,7 @@ public class FrameCaptureHandler
     private ResourceLocation fragCodeLoc = 
         new ResourceLocation(DepthShot.MODID, "shaders/depthmap.fcode");
     private ShaderSingle depthShader;
-    //private PostProcessor depthPostProcessor;
+    private PostProcessor tmpPostProcessor;
 
     public FrameCaptureHandler()
     {
@@ -75,7 +75,7 @@ public class FrameCaptureHandler
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            capture(width, height, DepthShotCore.path + "/tmp.png");
+            capture(width, height, DepthShotCore.config.getSavePath() + "/tmp.png");
             if(depthShader != null)
             {
                 ShaderRegistry.addShader(depthShader);
@@ -94,7 +94,7 @@ public class FrameCaptureHandler
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            capture(width, height, DepthShotCore.path + "/tmp_depth.png");
+            capture(width, height, DepthShotCore.config.getSavePath() + "/tmp_depth.png");
 
             ShaderRegistry.removeShader(depthShader);
             captureState = CaptureState.Idle;
@@ -172,87 +172,4 @@ public class FrameCaptureHandler
 
         GL11.glReadBuffer(backup);
     }
-
-    
-    void capturedepth(int width, int height)
-    {
-        // debug
-        GlStateManager.enableDepth();
-        GlStateManager.depthMask(false);
-        Framebuffer fb = DepthShotCore.mc.getFramebuffer();
-        //int dbg = GL11.glGetInteger(GL21.GL_DE);
-        DepthShotCore.logger.info("ds : depthbuffer now : " + fb.depthBuffer);
-
-        // depth
-        File depth_file = new File(DepthShotCore.path + "/tmp_depth.png");
-        if(!depth_file.isFile())
-        {
-            try{
-                depth_file.getParentFile().mkdirs();
-                depth_file.createNewFile();
-            } 
-            catch(Exception e)
-            {
-                DepthShotCore.logger.error("failed on create file");
-                depth_file = null;
-                e.printStackTrace(); 
-            } 
-        }
-        else
-        {
-            try
-            {
-                depth_file.delete();
-                depth_file.createNewFile();
-            }
-            catch(Exception e)
-            {
-                DepthShotCore.logger.error("failed on create file");
-                depth_file = null;
-                e.printStackTrace(); 
-            } 
-        }
-        
-        // read buffer
-        FloatBuffer depth_buffer = BufferUtils.createFloatBuffer(width * height);
-
-        //Framebuffer fb = DepthShotCore.mc.getFramebuffer();
-        //GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.depthBuffer);
-        //GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, depth_buffer);
-
-        GL11.glReadBuffer(GL11.GL_FRONT);
-        GL11.glReadPixels(0, 0, width, height, GL11.GL_DEPTH_COMPONENT, 
-            GL11.GL_FLOAT, depth_buffer);
-        
-        
-        BufferedImage depth_image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        for(int x = 0; x < width; x++) 
-        {
-            for(int y = 0; y < height; y++)
-            {
-                int i = (x + (width * y));
-                float val = depth_buffer.get(i);
-                int val_int = (int)(val * 0xFF);
-
-                int r = val_int & 0xFF;
-                int g = val_int & 0xFF;
-                int b = val_int & 0xFF;
-                depth_image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
-            }
-        }
-
-        if(depth_image != null)
-        {
-            try {
-                ImageIO.write(depth_image, "PNG", depth_file);
-                DepthShotCore.logger.info("ds : Depth capture success");
-            } 
-            catch (Exception e) 
-            { 
-                DepthShotCore.logger.info("ds : Depth capture failed");
-                e.printStackTrace(); 
-            }
-        }
-    }
-    
 }

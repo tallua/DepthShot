@@ -12,7 +12,7 @@ public class FrameCaptureKeyHandler
     @SubscribeEvent
     public void onKeyInput(KeyInputEvent event)
     {
-        if (DepthShotCore.capturekey.isPressed())
+        if (DepthShotCore.captureKey.isPressed())
         {
             DepthShotCore.logger.info("capture key pressed");
             if(DepthShotCore.captureHandler != null)
