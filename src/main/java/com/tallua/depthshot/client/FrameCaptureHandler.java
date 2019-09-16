@@ -6,6 +6,7 @@ import com.tallua.depthshot.DepthShotCore;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL21;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.LWJGLUtil;
@@ -79,6 +80,7 @@ public class FrameCaptureHandler
             if(depthShader != null)
             {
                 ShaderRegistry.addShader(depthShader);
+                extendedshaders.core.Main.skipSky(3000);
                 captureState = CaptureState.CaptureDepth;
             }
             else
@@ -101,7 +103,22 @@ public class FrameCaptureHandler
         }
     }
 
+    @SubscribeEvent
+    public void onRender(ShaderEvent.RenderSky event)
+    {
+        if(captureState == CaptureState.CaptureDepth)
+            event.setCanceled(true);
+    }
 
+    @SubscribeEvent
+    public void onRender(ShaderEvent.Start event)
+    {
+        if(captureState == CaptureState.CaptureDepth)
+        {
+            GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        }
+    }
 
     void capture(int width, int height, String filepath)
     {

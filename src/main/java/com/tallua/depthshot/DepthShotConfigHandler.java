@@ -42,7 +42,7 @@ public class DepthShotConfigHandler
 
     public String getSavePath()
     {
-        return getString("save_path", "C:/Data/temp");
+        return getString("save_path", "D:/Temp");
     }
 }
 
