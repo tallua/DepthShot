@@ -1,5 +1,7 @@
 package com.tallua.depthshot;
 
+import java.io.File;
+
 import com.tallua.depthshot.client.*;
 
 import net.minecraft.client.Minecraft;
@@ -52,13 +54,62 @@ public class DepthShotCore {
 
         if (captureKeyHandler != null && captureKey != null)
         {
-            logger.info("ds : Add caputerkey : " + captureKey.getKeyCode());
+            logInfo("Add capturekey : " + Keyboard.getKeyName(captureKey.getKeyCode()));
 
             ClientRegistry.registerKeyBinding(captureKey);
             MinecraftForge.EVENT_BUS.register(captureKeyHandler);
         }
     }
 
-    
 
+///
+/// Helper functions. 
+/// If class is too big, create new file that handles helper functions.
+///
+
+    public static void logInfo(String message)
+    {
+        if(logger != null)
+            logger.info("[DS] " + message);
+    }
+
+    public static void logError(String message)
+    {
+        if(logger != null)
+            logger.error("[DS] " + message);
+    }
+
+    public static File CreateNewFile(String filepath)
+    {
+        File file = new File(filepath);
+        if(!file.isFile())
+        {
+            try{
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            } 
+            catch(Exception e)
+            {
+                logError("Failed on creating file : " + filepath);
+                file = null;
+                e.printStackTrace(); 
+            } 
+        }
+        else
+        {
+            try
+            {
+                file.delete();
+                file.createNewFile();
+            }
+            catch(Exception e)
+            {
+                logError("Failed on recreating file : " + filepath);
+                file = null;
+                e.printStackTrace(); 
+            } 
+        }
+        
+        return file;
+    }
 }

@@ -47,7 +47,6 @@ public class FrameCaptureHandler
     private ResourceLocation fragCodeLoc = 
         new ResourceLocation(DepthShot.MODID, "shaders/depthmap.fcode");
     private ShaderSingle depthShader;
-    private PostProcessor tmpPostProcessor;
 
     public FrameCaptureHandler()
     {
@@ -63,7 +62,11 @@ public class FrameCaptureHandler
 
     public void doCapture()
     {
-        captureState = CaptureState.CaptureScreen;
+        if(captureState == CaptureState.Idle)
+            captureState = CaptureState.CaptureScreen;
+        else
+            DepthShotCore.logInfo("Other capturing process ongoing");
+
     }
 
     @SubscribeEvent
@@ -71,12 +74,23 @@ public class FrameCaptureHandler
     {
         if (captureState == CaptureState.CaptureScreen)
         {
-            DepthShotCore.logger.info("ds : Start capturing screen...");
+            String filepath = DepthShotCore.config.getSavePath() + "/tmp.png";
+            DepthShotCore.logInfo("Start capturing screenshot");
 
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            capture(width, height, DepthShotCore.config.getSavePath() + "/tmp.png");
+            boolean success = captureScreenShot(width, height, filepath);
+            if(success)
+            {
+                DepthShotCore.logInfo("Capturing screenshot success: " + filepath);
+            }
+            else
+            {
+                DepthShotCore.logInfo("Capturing screenshot failed");
+            }
+
+            // move to depthmap capture
             if(depthShader != null)
             {
                 ShaderRegistry.addShader(depthShader);
@@ -91,13 +105,23 @@ public class FrameCaptureHandler
         }
         else if(captureState == CaptureState.CaptureDepth)
         {
-            DepthShotCore.logger.info("ds : Start capturing depth...");
+            String filepath = DepthShotCore.config.getSavePath() + "/tmp_depth.png";
+            DepthShotCore.logInfo("Start capturing depthmap");
 
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            capture(width, height, DepthShotCore.config.getSavePath() + "/tmp_depth.png");
+            boolean success = captureDepth(width, height, filepath);
+            if(success)
+            {
+                DepthShotCore.logInfo("Capturing depthmap success: " + filepath);
+            }
+            else
+            {
+                DepthShotCore.logInfo("Capturing depthmap failed");
+            }
 
+            // move to idle state
             ShaderRegistry.removeShader(depthShader);
             captureState = CaptureState.Idle;
         }
@@ -106,6 +130,7 @@ public class FrameCaptureHandler
     @SubscribeEvent
     public void onRender(ShaderEvent.RenderSky event)
     {
+        // remove sky rendering on depthmap capture
         if(captureState == CaptureState.CaptureDepth)
             event.setCanceled(true);
     }
@@ -113,52 +138,31 @@ public class FrameCaptureHandler
     @SubscribeEvent
     public void onRender(ShaderEvent.Start event)
     {
+        // remove sky color on depthmap capture
         if(captureState == CaptureState.CaptureDepth)
         {
-            GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GL11.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         }
     }
 
-    void capture(int width, int height, String filepath)
-    {
-        // game
-        File screen_file = new File(filepath);
-        if(!screen_file.isFile())
-        {
-            try{
-                screen_file.getParentFile().mkdirs();
-                screen_file.createNewFile();
-            } 
-            catch(Exception e)
-            {
-                DepthShotCore.logger.error("failed on create file");
-                screen_file = null;
-                e.printStackTrace(); 
-            } 
-        }
-        else
-        {
-            try
-            {
-                screen_file.delete();
-                screen_file.createNewFile();
-            }
-            catch(Exception e)
-            {
-                DepthShotCore.logger.error("failed on create file");
-                screen_file = null;
-                e.printStackTrace(); 
-            } 
-        }
+    ///
+    /// Capturing task
+    ///
 
-        int backup = GL11.glGetInteger(GL11.GL_READ_BUFFER);
-        
+    boolean captureScreenShot(int width, int height, String filepath)
+    {
+        // create file
+        File screen_file = DepthShotCore.CreateNewFile(filepath);
+        if(screen_file == null)
+            return false;
+
         // read buffer
+        int backup = GL11.glGetInteger(GL11.GL_READ_BUFFER);
         ByteBuffer screen_buffer = BufferUtils.createByteBuffer(width * height * 4);
         GL11.glReadBuffer(GL11.GL_BACK);
-        GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, 
-            GL11.GL_UNSIGNED_BYTE, screen_buffer);
+        GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, screen_buffer);
+        GL11.glReadBuffer(backup);
         
         BufferedImage screen_image = new BufferedImage(width, height, 
             BufferedImage.TYPE_INT_RGB);
@@ -174,19 +178,56 @@ public class FrameCaptureHandler
             }
         }
 
-        if(screen_file != null)
+        
+        try {
+            ImageIO.write(screen_image, "PNG", screen_file);
+            return true;
+        } 
+        catch (Exception e) 
+        { 
+            e.printStackTrace(); 
+            return false;
+        }
+    }
+
+    
+    boolean captureDepth(int width, int height, String filepath)
+    {
+        // create file
+        File depth_file = DepthShotCore.CreateNewFile(filepath);
+        if(depth_file == null)
+            return false;
+
+        // read buffer
+        int backup = GL11.glGetInteger(GL11.GL_READ_BUFFER);
+        ByteBuffer screen_buffer = BufferUtils.createByteBuffer(width * height * 4);
+        GL11.glReadBuffer(GL11.GL_BACK);
+        GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, screen_buffer);
+        GL11.glReadBuffer(backup);
+        
+        BufferedImage screen_image = new BufferedImage(width, height, 
+            BufferedImage.TYPE_INT_RGB);
+        for(int x = 0; x < width; x++) 
         {
-            try {
-                ImageIO.write(screen_image, "PNG", screen_file);
-                DepthShotCore.logger.info("ds : capture success");
-            } 
-            catch (Exception e) 
-            { 
-                DepthShotCore.logger.info("ds : capture failed");
-                e.printStackTrace(); 
+            for(int y = 0; y < height; y++)
+            {
+                int i = (x + (width * y)) * 4;
+                int r = screen_buffer.get(i) & 0xFF;
+                int g = screen_buffer.get(i + 1) & 0xFF;
+                int b = screen_buffer.get(i + 2) & 0xFF;
+                screen_image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
             }
         }
 
-        GL11.glReadBuffer(backup);
+        
+        try {
+            ImageIO.write(screen_image, "PNG", depth_file);
+            return true;
+        } 
+        catch (Exception e) 
+        { 
+            e.printStackTrace(); 
+            return false;
+        }
     }
 }

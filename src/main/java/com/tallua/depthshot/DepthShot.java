@@ -24,27 +24,17 @@ public class DepthShot {
         mc = Minecraft.getMinecraft();
         logger = event.getModLog();
 
-        logger.info("ds : Preinitializaing depthshot");
+        logger.info("[DS] Preinitializaing depthshot");
         DepthShotCore.init(mc, logger);
         
-        logger.info("ds : Loading configs");
+        logger.info("[DS] Loading configs");
         DepthShotCore.loadConfigs();
 
         
         if(DepthShotCore.isClient)
         {
-            logger.info("ds : Registering client events");
+            logger.info("[DS] Registering client events");
             DepthShotCore.registerEvents();
         }
     }
-
-    @EventHandler
-    public void init(FMLInitializationEvent event)
-    {
-        // some example code
-        logger.info("ds : Initializing depthshot");
-
-        
-    }
-
 }

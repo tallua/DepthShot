@@ -2,9 +2,12 @@ package com.tallua.depthshot;
 
 import java.io.File;
 
+import io.netty.util.internal.UnstableApi;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+// on develop
+@UnstableApi
 public class DepthShotConfigHandler
 {
     Configuration config;
@@ -23,7 +26,7 @@ public class DepthShotConfigHandler
         }
         catch(Exception e)
         {
-            DepthShotCore.logger.error("Error loading config file");
+            DepthShotCore.logError("Error loading config file");
         }
     }
 
@@ -42,7 +45,7 @@ public class DepthShotConfigHandler
 
     public String getSavePath()
     {
-        return getString("save_path", "D:/Temp");
+        return getString("save_path", "C:/Data/temp");
     }
 }
 
