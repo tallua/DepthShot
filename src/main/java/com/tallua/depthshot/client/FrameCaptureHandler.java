@@ -212,9 +212,22 @@ public class FrameCaptureHandler
             for(int y = 0; y < height; y++)
             {
                 int i = (x + (width * y)) * 4;
-                int r = screen_buffer.get(i) & 0xFF;
-                int g = screen_buffer.get(i + 1) & 0xFF;
-                int b = screen_buffer.get(i + 2) & 0xFF;
+                int depth_r = screen_buffer.get(i) & 0xFF;
+                int depth_g = screen_buffer.get(i + 1) & 0xFF;
+                int depth_b = screen_buffer.get(i + 2) & 0xFF;
+
+                float depth = 0.0f;
+                depth += depth_b / 255.0f;
+                depth = depth / 255.0f;
+                depth += depth_g / 255.0f;
+                depth = depth / 255.0f;
+                depth += depth_r / 255.0f;
+                depth = depth * 255.0f;
+
+                int r = ((int)depth) & 0xFF;
+                int g = ((int)depth) & 0xFF;
+                int b = ((int)depth) & 0xFF;
+
                 screen_image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
             }
         }
