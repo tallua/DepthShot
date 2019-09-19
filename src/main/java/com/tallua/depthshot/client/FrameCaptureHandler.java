@@ -7,6 +7,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
+import org.codehaus.plexus.util.StringOutputStream;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.LWJGLUtil;
@@ -15,6 +16,8 @@ import extendedshaders.api.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.*;
 
 import javax.imageio.ImageIO;
@@ -111,7 +114,8 @@ public class FrameCaptureHandler
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            boolean success = captureDepth(width, height, filepath);
+            boolean success = captureDepthmap(width, height, filepath, true);
+            success = success & captureDepthmap(width, height, DepthShotCore.config.getSavePath() + "/tmp_depth.csv", false);
             if(success)
             {
                 DepthShotCore.logInfo("Capturing depthmap success: " + filepath);
@@ -191,7 +195,7 @@ public class FrameCaptureHandler
     }
 
     
-    boolean captureDepth(int width, int height, String filepath)
+    boolean captureDepthmap(int width, int height, String filepath, boolean asimage)
     {
         // create file
         File depth_file = DepthShotCore.CreateNewFile(filepath);
@@ -205,42 +209,87 @@ public class FrameCaptureHandler
         GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, screen_buffer);
         GL11.glReadBuffer(backup);
         
-        BufferedImage screen_image = new BufferedImage(width, height, 
-            BufferedImage.TYPE_INT_RGB);
-        for(int x = 0; x < width; x++) 
+        if(asimage)
         {
-            for(int y = 0; y < height; y++)
+            BufferedImage screen_image = new BufferedImage(width, height, 
+                BufferedImage.TYPE_INT_RGB);
+            for(int x = 0; x < width; x++) 
             {
-                int i = (x + (width * y)) * 4;
-                int depth_r = screen_buffer.get(i) & 0xFF;
-                int depth_g = screen_buffer.get(i + 1) & 0xFF;
-                int depth_b = screen_buffer.get(i + 2) & 0xFF;
-
-                float depth = 0.0f;
-                depth += depth_b / 255.0f;
-                depth = depth / 255.0f;
-                depth += depth_g / 255.0f;
-                depth = depth / 255.0f;
-                depth += depth_r / 255.0f;
-                depth = depth * 255.0f;
-
-                int r = ((int)depth) & 0xFF;
-                int g = ((int)depth) & 0xFF;
-                int b = ((int)depth) & 0xFF;
-
-                screen_image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+                for(int y = 0; y < height; y++)
+                {
+                    int i = (x + (width * y)) * 4;
+                    int depth_r = screen_buffer.get(i) & 0xFF;
+                    int depth_g = screen_buffer.get(i + 1) & 0xFF;
+                    int depth_b = screen_buffer.get(i + 2) & 0xFF;
+    
+                    float depth = 0.0f;
+                    depth += depth_b / 255.0f;
+                    depth = depth / 255.0f;
+                    depth += depth_g / 255.0f;
+                    depth = depth / 255.0f;
+                    depth += depth_r / 255.0f;
+                    depth = depth * 255.0f;
+    
+                    int r = ((int)depth) & 0xFF;
+                    int g = ((int)depth) & 0xFF;
+                    int b = ((int)depth) & 0xFF;
+    
+                    screen_image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+                }
+            }
+    
+            
+            try {
+                ImageIO.write(screen_image, "PNG", depth_file);
+                return true;
+            } 
+            catch (Exception e) 
+            { 
+                e.printStackTrace(); 
+                return false;
             }
         }
+        else
+        {
+            StringBuilder builder = new StringBuilder();
 
+            for(int y = 0; y < height; y++)
+            {
+                for(int x = 0; x < width; x++) 
+                {
+                    int i = (x + (width * y)) * 4;
+                    int depth_r = screen_buffer.get(i) & 0xFF;
+                    int depth_g = screen_buffer.get(i + 1) & 0xFF;
+                    int depth_b = screen_buffer.get(i + 2) & 0xFF;
         
-        try {
-            ImageIO.write(screen_image, "PNG", depth_file);
-            return true;
-        } 
-        catch (Exception e) 
-        { 
-            e.printStackTrace(); 
-            return false;
+                    float depth = 0.0f;
+                    depth += depth_b / 255.0f;
+                    depth = depth / 255.0f;
+                    depth += depth_g / 255.0f;
+                    depth = depth / 255.0f;
+                    depth += depth_r / 255.0f;
+                    depth = depth * 255.0f;
+        
+                    if(x != 0)
+                        builder.append(", ");
+                    builder.append(String.format("%5.2f", depth));
+                }
+
+                if(y != height - 1)
+                    builder.append(",\n");
+            }
+
+
+            try (FileOutputStream fs = new FileOutputStream(depth_file))
+            {
+                OutputStreamWriter writer = new OutputStreamWriter(fs);
+                writer.write(builder.toString());
+                return true;
+            } catch(Exception e)
+            {
+                e.printStackTrace(); 
+                return false;
+            }
         }
     }
 }
