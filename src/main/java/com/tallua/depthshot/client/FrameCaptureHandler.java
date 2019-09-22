@@ -22,6 +22,7 @@ import java.nio.*;
 
 import javax.imageio.ImageIO;
 
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
@@ -34,13 +35,14 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class FrameCaptureHandler
 {
-    private CaptureSpotGenerator generator = new CaptureSpotGenerator();
+    private ICaptureSpotGenerator spotGenerator = new XMoveSpotGenerator();
 
     private enum CaptureState
     {
         Idle,
         CaptureScreen,
-        CaptureDepth
+        CaptureDepth,
+        MovePos
     };
     private CaptureState captureState = CaptureState.Idle;
     
@@ -55,6 +57,7 @@ public class FrameCaptureHandler
     private int capture_remain = 0;
     private static int cooldown_init = 60;
     private int cooldown_remain = 3;
+    private boolean need_move = false;
 
     private ResourceLocation vertUniformLoc = 
         new ResourceLocation(DepthShot.MODID, "shaders/depthmap.vuni");
@@ -125,6 +128,17 @@ public class FrameCaptureHandler
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event)
     {
+        if(captureState == CaptureState.MovePos && need_move)
+        {
+            EntityPlayerSP player = DepthShotCore.mc.player;
+            DepthShotCore.logInfo("Player was at : " + player.posX + " " + player.posY + " " + player.posZ);
+            Vec3d pos = spotGenerator.next();
+            
+            DepthShotCore.logInfo("Moving player to : " + pos.x + " " + pos.y + " " + pos.z);
+            DepthShotCore.mc.player.setPosition(pos.x, pos.y, pos.z);
+
+            need_move = false;
+        }
     }
 
     @SubscribeEvent
@@ -197,22 +211,28 @@ public class FrameCaptureHandler
             }
     
             // move to idle state
-            captureState = CaptureState.Idle;
             if(mode == CaptureMode.One)
             {
+                captureState = CaptureState.Idle;
                 mode = CaptureMode.Idle;
                 capture_remain = 0;
             }
             else if(mode == CaptureMode.Many)
             {
-                capture_remain--;
-                if(capture_remain <= 0)
-                {
-                    mode = CaptureMode.Idle;
-                    capture_remain = 0;
-                }
+                captureState = CaptureState.MovePos;
             }
-    
+        }
+        else if(captureState == CaptureState.MovePos)
+        {
+            captureState = CaptureState.Idle;
+            capture_remain--;
+            if(capture_remain <= 0)
+            {
+                mode = CaptureMode.Idle;
+                capture_remain = 0;
+            }
+
+            need_move = true;
             cooldown_remain = cooldown_init;
         }
     }

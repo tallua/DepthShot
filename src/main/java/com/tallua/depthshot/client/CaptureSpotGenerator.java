@@ -3,7 +3,7 @@ package com.tallua.depthshot.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.Vec3d;
 
-class CaptureSpotGenerator
+class XMoveSpotGenerator implements ICaptureSpotGenerator
 {
     public Vec3d next()
     {
