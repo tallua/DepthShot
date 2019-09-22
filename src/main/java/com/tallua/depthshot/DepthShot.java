@@ -1,13 +1,11 @@
 package com.tallua.depthshot;
 
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-
-
-import org.apache.logging.log4j.Logger;
 
 @Mod(modid = DepthShot.MODID, name = DepthShot.NAME, version = DepthShot.VERSION)
 public class DepthShot {

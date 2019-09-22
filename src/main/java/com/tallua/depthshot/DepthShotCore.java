@@ -2,17 +2,18 @@ package com.tallua.depthshot;
 
 import java.io.File;
 
-import com.tallua.depthshot.client.*;
+import com.tallua.depthshot.client.FrameCaptureComHandler;
+import com.tallua.depthshot.client.FrameCaptureHandler;
+import com.tallua.depthshot.client.FrameCaptureKeyHandler;
+
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.command.CommandBase;
-
-import org.lwjgl.input.Keyboard;
-import org.apache.logging.log4j.Logger;
 
 public class DepthShotCore {
 

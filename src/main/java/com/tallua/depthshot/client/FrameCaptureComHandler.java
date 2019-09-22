@@ -1,25 +1,16 @@
 package com.tallua.depthshot.client;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.tallua.depthshot.DepthShotCore;
-import com.tallua.depthshot.client.*;
 
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.IClientCommand;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.command.*;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
-import org.lwjgl.input.Keyboard;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.client.IClientCommand;
 
 public class FrameCaptureComHandler implements IClientCommand 
 {

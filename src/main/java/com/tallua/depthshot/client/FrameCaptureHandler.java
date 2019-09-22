@@ -1,34 +1,26 @@
 package com.tallua.depthshot.client;
 
-import com.tallua.depthshot.DepthShot;
-import com.tallua.depthshot.DepthShotCore;
-
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL21;
-import org.lwjgl.opengl.GL30;
-import org.codehaus.plexus.util.StringOutputStream;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.LWJGLUtil;
-
-import extendedshaders.api.*;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.*;
+import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import com.tallua.depthshot.DepthShot;
+import com.tallua.depthshot.DepthShotCore;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+
+import extendedshaders.api.ShaderEvent;
+import extendedshaders.api.ShaderRegistry;
+import extendedshaders.api.ShaderSingle;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.*;
-
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
