@@ -95,6 +95,18 @@ public class DepthShotCore {
             logger.error("[DS] " + message);
     }
 
+    public static String GenCurrentFilePrefix()
+    {
+        String prefix = "p";
+
+        prefix += (int)(mc.player.posX) + "_";
+        prefix += (int)(mc.player.posY) + "_";
+        prefix += (int)(mc.player.posZ) + "_";
+
+
+        return prefix;
+    }
+
     public static File CreateNewFile(String filepath)
     {
         File file = new File(filepath);
