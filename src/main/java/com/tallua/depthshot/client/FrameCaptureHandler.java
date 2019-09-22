@@ -25,13 +25,17 @@ import javax.imageio.ImageIO;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.*;
 
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 
 public class FrameCaptureHandler
 {
+    private CaptureSpotGenerator generator = new CaptureSpotGenerator();
+
     private enum CaptureState
     {
         Idle,
@@ -40,6 +44,17 @@ public class FrameCaptureHandler
     };
     private CaptureState captureState = CaptureState.Idle;
     
+    private enum CaptureMode
+    {
+        Idle,
+        One,
+        Many
+    };
+    private CaptureMode mode = CaptureMode.Idle;
+    
+    private int capture_remain = 0;
+    private static int cooldown_init = 60;
+    private int cooldown_remain = 3;
 
     private ResourceLocation vertUniformLoc = 
         new ResourceLocation(DepthShot.MODID, "shaders/depthmap.vuni");
@@ -62,19 +77,60 @@ public class FrameCaptureHandler
         );
     }
 
+    public void doCapture(int count)
+    {
+        if(!DepthShotCore.isClient)
+        {
+            DepthShotCore.logError("Failed to capture : non client");
+            return;
+        }
+        if(!DepthShotCore.isOp)
+        {
+            DepthShotCore.logError("Failed to capture : non op");
+            return;
+        }
+
+        if(mode != CaptureMode.Idle)
+        {
+            DepthShotCore.logError("Other capturing process ongoing");
+            return;
+        }
+
+        if(captureState != CaptureState.Idle)
+        {
+            DepthShotCore.logError("Other capturing process ongoing");
+            return;
+        }
+        
+
+        if(count == 1)
+        {
+            mode = CaptureMode.One;
+            capture_remain = 1;
+        }
+        else if(count > 1)
+        {
+            mode = CaptureMode.Many;
+            capture_remain = count;
+        }
+        DepthShotCore.logInfo("Will capture in " + mode.toString() + " : " + capture_remain);
+    }
 
     public void doCapture()
     {
-        if(captureState == CaptureState.Idle)
-            captureState = CaptureState.CaptureScreen;
-        else
-            DepthShotCore.logInfo("Other capturing process ongoing");
+        doCapture(1);
+    }
 
+
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event)
+    {
     }
 
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event)
     {
+        // do action on state
         if (captureState == CaptureState.CaptureScreen)
         {
             String filepath = DepthShotCore.config.getSavePath() + "/tmp.png";
@@ -92,19 +148,6 @@ public class FrameCaptureHandler
             {
                 DepthShotCore.logInfo("Capturing screenshot failed");
             }
-
-            // move to depthmap capture
-            if(depthShader != null)
-            {
-                ShaderRegistry.addShader(depthShader);
-                extendedshaders.core.Main.skipSky(3000);
-                captureState = CaptureState.CaptureDepth;
-            }
-            else
-            {
-                captureState = CaptureState.Idle;
-            }
-
         }
         else if(captureState == CaptureState.CaptureDepth)
         {
@@ -124,10 +167,53 @@ public class FrameCaptureHandler
             {
                 DepthShotCore.logInfo("Capturing depthmap failed");
             }
+        }
 
+        
+        // move to next state
+        if(cooldown_remain > 0)
+            cooldown_remain--;
+
+        if(captureState == CaptureState.Idle && mode != CaptureMode.Idle && cooldown_remain <= 0)
+        {
+            captureState = CaptureState.CaptureScreen;
+        }
+        else if(captureState == CaptureState.CaptureScreen)
+        {
+            if(depthShader != null)
+            {
+                ShaderRegistry.addShader(depthShader);
+            }
+            extendedshaders.core.Main.skipSky(3000);
+    
+            // move to depthmap capture
+            captureState = CaptureState.CaptureDepth;
+        }
+        else if(captureState == CaptureState.CaptureDepth)
+        {
+            if(depthShader != null)
+            {
+                ShaderRegistry.removeShader(depthShader);
+            }
+    
             // move to idle state
-            ShaderRegistry.removeShader(depthShader);
             captureState = CaptureState.Idle;
+            if(mode == CaptureMode.One)
+            {
+                mode = CaptureMode.Idle;
+                capture_remain = 0;
+            }
+            else if(mode == CaptureMode.Many)
+            {
+                capture_remain--;
+                if(capture_remain <= 0)
+                {
+                    mode = CaptureMode.Idle;
+                    capture_remain = 0;
+                }
+            }
+    
+            cooldown_remain = cooldown_init;
         }
     }
 

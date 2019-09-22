@@ -5,9 +5,11 @@ import java.io.File;
 import com.tallua.depthshot.client.*;
 
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.command.CommandBase;
 
 import org.lwjgl.input.Keyboard;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +22,7 @@ public class DepthShotCore {
 
     // status
     public static boolean isClient = true;
+    public static boolean isOp = true;
     public static String seedString = "ASDF";
 
     // handlers
@@ -27,6 +30,7 @@ public class DepthShotCore {
     public static DepthShotConfigHandler config;
     public static FrameCaptureHandler captureHandler;
     public static FrameCaptureKeyHandler captureKeyHandler;
+    public static FrameCaptureComHandler captureComHandler;
     
     public static void init(Minecraft mc, Logger logger)
     {
@@ -36,6 +40,7 @@ public class DepthShotCore {
         config = new DepthShotConfigHandler("config/" + DepthShot.MODID + ".cfg");
         captureHandler = new FrameCaptureHandler();
         captureKeyHandler = new FrameCaptureKeyHandler();
+        captureComHandler = new FrameCaptureComHandler();
     }
 
     public static void loadConfigs() 
@@ -49,15 +54,25 @@ public class DepthShotCore {
     {
         if(captureHandler != null)
         {
+            logInfo("Capture Event Handler");
             MinecraftForge.EVENT_BUS.register(captureHandler);
         }
 
         if (captureKeyHandler != null && captureKey != null)
         {
+            logInfo("Capture Key Event Handler");
+
             logInfo("Add capturekey : " + Keyboard.getKeyName(captureKey.getKeyCode()));
 
             ClientRegistry.registerKeyBinding(captureKey);
             MinecraftForge.EVENT_BUS.register(captureKeyHandler);
+        }
+
+        if(captureComHandler != null)
+        {
+            logInfo("Capture Command Event Handler");
+
+            ClientCommandHandler.instance.registerCommand(captureComHandler);
         }
     }
 
