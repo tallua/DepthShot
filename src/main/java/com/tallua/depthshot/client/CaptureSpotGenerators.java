@@ -127,7 +127,7 @@ public class CaptureSpotGenerators {
 
         @Override
         public Vec2f getRot() {
-            int pitch = rand.nextInt(140) - 80;
+            int pitch = rand.nextInt(125) - 80;
             int yaw = rand.nextInt(360);
 
             return new Vec2f(pitch, yaw);
