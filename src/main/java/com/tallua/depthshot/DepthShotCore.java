@@ -95,10 +95,12 @@ public class DepthShotCore {
             logger.error("[DS] " + message);
     }
 
-    public static String GenCurrentFilePrefix()
+    public static String hashCurrentInfo()
     {
-        String prefix = "p";
+        String prefix = "h";
 
+        prefix += (int)(mc.player.getPitchYaw().x) + "_";
+        prefix += (int)(mc.player.getPitchYaw().y % 360) + "_";
         prefix += (int)(mc.player.posX) + "_";
         prefix += (int)(mc.player.posY) + "_";
         prefix += (int)(mc.player.posZ) + "_";
@@ -107,7 +109,7 @@ public class DepthShotCore {
         return prefix;
     }
 
-    public static File CreateNewFile(String filepath)
+    public static File createNewFile(String filepath)
     {
         File file = new File(filepath);
         if(!file.isFile())

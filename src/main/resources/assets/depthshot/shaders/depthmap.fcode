@@ -1,7 +1,7 @@
 
 float depth_val = sqrt(eyePos.x * eyePos.x + eyePos.y * eyePos.y + eyePos.z * eyePos.z);
 const float max_depth = 196.0f;
-depth_val = clamp(depth_val / max_depth, 0.0f, 1.0f);
+depth_val = 1.0f - clamp(depth_val / max_depth, 0.0f, 1.0f);
 
 // blackmagic starts
 // [0.0f, 255.0f]

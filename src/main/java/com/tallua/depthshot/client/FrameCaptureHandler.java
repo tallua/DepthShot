@@ -139,7 +139,7 @@ public class FrameCaptureHandler
         // do action on state
         if (captureState == CaptureState.CaptureScreen)
         {
-            String filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.GenCurrentFilePrefix() + "_screen.png";
+            String filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.hashCurrentInfo() + "_screen.png";
             DepthShotCore.logInfo("Start capturing screenshot");
 
             int width = DepthShotCore.mc.displayWidth;
@@ -157,15 +157,15 @@ public class FrameCaptureHandler
         }
         else if(captureState == CaptureState.CaptureDepth)
         {
-            String image_filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.GenCurrentFilePrefix() + "_depth.png";
-            String raw_filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.GenCurrentFilePrefix() + "_depth.raw";
+            String image_filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.hashCurrentInfo() + "_depth.png";
+            String raw_filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.hashCurrentInfo() + "_depth.dat";
             DepthShotCore.logInfo("Start capturing depthmap");
 
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
             boolean success = captureDepthmap(width, height, image_filepath, "PNG");
-            success = success & captureDepthmap(width, height, raw_filepath, "RAW");
+            success = success & captureDepthmap(width, height, raw_filepath, "DAT");
             if(success)
             {
                 DepthShotCore.logInfo("Capturing depthmap success: " + image_filepath);
@@ -256,7 +256,7 @@ public class FrameCaptureHandler
     boolean captureScreenShot(int width, int height, String filepath)
     {
         // create file
-        File screen_file = DepthShotCore.CreateNewFile(filepath);
+        File screen_file = DepthShotCore.createNewFile(filepath);
         if(screen_file == null)
             return false;
 
@@ -298,7 +298,7 @@ public class FrameCaptureHandler
     boolean captureDepthmap(int width, int height, String filepath, String format)
     {
         // create file
-        File depth_file = DepthShotCore.CreateNewFile(filepath);
+        File depth_file = DepthShotCore.createNewFile(filepath);
         if(depth_file == null)
             return false;
 
@@ -396,20 +396,24 @@ public class FrameCaptureHandler
                     return false;
                 }
             }
-            case "RAW":
-            case "raw":
+            case "DAT":
+            case "dat":
             {
-                // try (FileOutputStream fs = new FileOutputStream(depth_file))
-                // {
-                //     fs.write(depth_buffer.array());
-                //     return true;
-                // } 
-                // catch(Exception e)
-                // {
-                //     e.printStackTrace(); 
-                //     return false;
-                // }
-                return true;
+                try (FileOutputStream fs = new FileOutputStream(depth_file))
+                {
+                    byte[] depth_arr = new byte[width * height * 4];
+                    for(int i = 0; i < width * height * 4; i++)
+                    {
+                        depth_arr[i] = depth_buffer.get(i);
+                    }
+                    fs.write(depth_arr);
+                    return true;
+                } 
+                catch(Exception e)
+                {
+                    e.printStackTrace(); 
+                    return false;
+                }
             }
         }
 
