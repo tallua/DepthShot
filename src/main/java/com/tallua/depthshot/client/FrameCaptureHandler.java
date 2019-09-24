@@ -19,6 +19,7 @@ import extendedshaders.api.ShaderRegistry;
 import extendedshaders.api.ShaderSingle;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -27,7 +28,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class FrameCaptureHandler
 {
-    private ICaptureSpotGenerator spotGenerator = new XMoveSpotGenerator();
+    private ICaptureSpotGenerator spotGenerator = new  CaptureSpotGenerators.SnailSpotGenerator();
 
     private enum CaptureState
     {
@@ -107,6 +108,7 @@ public class FrameCaptureHandler
         {
             mode = CaptureMode.Many;
             capture_remain = count;
+            spotGenerator.reset();
         }
         DepthShotCore.logInfo("Will capture in " + mode.toString() + " : " + capture_remain);
     }
@@ -124,10 +126,14 @@ public class FrameCaptureHandler
         {
             EntityPlayerSP player = DepthShotCore.mc.player;
             DepthShotCore.logInfo("Player was at : " + player.posX + " " + player.posY + " " + player.posZ);
-            Vec3d pos = spotGenerator.next();
+            spotGenerator.next();
+            Vec3d pos = spotGenerator.getPos();
+            Vec2f rot = spotGenerator.getRot();
             
             DepthShotCore.logInfo("Moving player to : " + pos.x + " " + pos.y + " " + pos.z);
-            DepthShotCore.mc.player.setPosition(pos.x, pos.y, pos.z);
+            DepthShotCore.logInfo("Rotating player to : " + rot.x + " " + rot.y);
+            //DepthShotCore.mc.player.setPosition(pos.x, pos.y, pos.z);
+            DepthShotCore.mc.player.setLocationAndAngles(pos.x, pos.y, pos.z, rot.y, rot.x);
 
             need_move = false;
         }
