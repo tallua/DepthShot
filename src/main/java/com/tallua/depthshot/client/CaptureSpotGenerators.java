@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 public class CaptureSpotGenerators {
     public static class XMoveSpotGenerator implements ICaptureSpotGenerator {
@@ -53,9 +54,9 @@ public class CaptureSpotGenerators {
     {
         Random rand = new Random();
 
-        double lastX = 0;
-        double lastY = 0;
-        double lastZ = 0;
+        int lastX = 0;
+        int lastY = 0;
+        int lastZ = 0;
 
         int dir = 0;
         int dir_count = 0;
@@ -64,9 +65,9 @@ public class CaptureSpotGenerators {
         @Override
         public void reset()
         {
-            lastX = Minecraft.getMinecraft().player.posX;
-            lastY = Minecraft.getMinecraft().player.posY;
-            lastZ = Minecraft.getMinecraft().player.posZ;
+            lastX = (int)Minecraft.getMinecraft().player.posX;
+            lastY = (int)Minecraft.getMinecraft().player.posY;
+            lastZ = (int)Minecraft.getMinecraft().player.posZ;
             
             dir = 0;
             dir_count = 0;
@@ -89,29 +90,29 @@ public class CaptureSpotGenerators {
                 }
             }
 
-            Vec3d result = new Vec3d(0, 0, 0);
+            Vec3i result = new Vec3i(0, 0, 0);
             switch(dir)
             {
             case 0:
-                result = new Vec3d(lastX + 16, lastY, lastZ);
+                result = new Vec3i(lastX + 16, lastY, lastZ);
                 break;
             case 1:
-                result = new Vec3d(lastX, lastY, lastZ + 16);
+                result = new Vec3i(lastX, lastY, lastZ + 16);
                 break;
             case 2:
-                result = new Vec3d(lastX - 16, lastY, lastZ);
+                result = new Vec3i(lastX - 16, lastY, lastZ);
                 break;
             case 3:
-                result = new Vec3d(lastX, lastY, lastZ - 16);
+                result = new Vec3i(lastX, lastY, lastZ - 16);
                 break;
 
             default:
                 return;
             }
 
-            lastX = result.x;
-            lastY = result.y;
-            lastZ = result.z;
+            lastX = result.getX();
+            lastY = result.getY();
+            lastZ = result.getZ();
 
             IBlockState block = DepthShotCore.mc.world.getBlockState(new BlockPos(result));
             DepthShotCore.logInfo("Block at " + result + " : " + (block.isBlockNormalCube()));
@@ -127,7 +128,7 @@ public class CaptureSpotGenerators {
 
         @Override
         public Vec2f getRot() {
-            int pitch = rand.nextInt(125) - 80;
+            int pitch = rand.nextInt(125) - 45;
             int yaw = rand.nextInt(360);
 
             return new Vec2f(pitch, yaw);
