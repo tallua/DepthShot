@@ -13,6 +13,7 @@
 ##Usage
  - press 'B' key inside a game.
  - screen will blink once.
+ - client side command "/depthshot \[count\]" will automatically create count times of image by moving it self
 
 
 
