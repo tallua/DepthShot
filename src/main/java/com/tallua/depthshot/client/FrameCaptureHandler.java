@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import com.tallua.depthshot.DepthShot;
 import com.tallua.depthshot.DepthShotCore;
 
+import org.apache.http.util.ByteArrayBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -106,6 +107,10 @@ public class FrameCaptureHandler
         {
             mode = CaptureMode.One;
             capture_remain = 1;
+            
+            spotGenerator.reset();
+            last_pos = spotGenerator.getPos();
+            last_pitchyaw = spotGenerator.getRot();
         }
         else if(count > 1)
         {
@@ -413,12 +418,27 @@ public class FrameCaptureHandler
             {
                 try (FileOutputStream fs = new FileOutputStream(depth_file))
                 {
-                    byte[] depth_arr = new byte[width * height * 4];
-                    for(int i = 0; i < width * height * 4; i++)
+                    byte[] bytes = new byte[4];
+                    for(int y = 0; y < height; y++)
                     {
-                        depth_arr[i] = depth_buffer.get(i);
+                        for(int x = 0; x < width; x++) 
+                        {
+                            int i = (x + (width * y)) * 4;
+                            int depth_r = depth_buffer.get(i) & 0xFF;
+                            int depth_g = depth_buffer.get(i + 1) & 0xFF;
+                            int depth_b = depth_buffer.get(i + 2) & 0xFF;
+                
+                            float depth = 0.0f;
+                            depth += depth_b / 255.0f;
+                            depth = depth / 255.0f;
+                            depth += depth_g / 255.0f;
+                            depth = depth / 255.0f;
+                            depth += depth_r / 255.0f;
+                            depth = depth * 255.0f;
+                
+                            fs.write(ByteBuffer.wrap(bytes).putFloat(depth).array());
+                        }
                     }
-                    fs.write(depth_arr);
                     return true;
                 } 
                 catch(Exception e)
