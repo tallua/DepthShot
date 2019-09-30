@@ -350,6 +350,8 @@ public class FrameCaptureHandler
                         depth = depth / 255.0f;
                         depth += depth_r / 255.0f;
                         depth = depth * 255.0f;
+                        if(depth > 255)
+                            depth = 0;
                     
                         int r = ((int)depth) & 0xFF;
                         int g = ((int)depth) & 0xFF;
@@ -391,6 +393,8 @@ public class FrameCaptureHandler
                         depth = depth / 255.0f;
                         depth += depth_r / 255.0f;
                         depth = depth * 255.0f;
+                        if(depth > 255)
+                            depth = 0;
             
                         if(x != 0)
                             builder.append(", ");
@@ -435,6 +439,8 @@ public class FrameCaptureHandler
                             depth = depth / 255.0f;
                             depth += depth_r / 255.0f;
                             depth = depth * 255.0f;
+                            if(depth > 255)
+                                depth = 0;
                 
                             fs.write(ByteBuffer.wrap(bytes).putFloat(depth).array());
                         }
