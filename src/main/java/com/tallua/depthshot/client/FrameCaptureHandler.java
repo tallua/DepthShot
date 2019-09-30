@@ -52,6 +52,9 @@ public class FrameCaptureHandler
     private int cooldown_remain = 3;
     private boolean need_move = false;
 
+    private Vec3d last_pos;
+    private Vec2f last_pitchyaw;
+
     private ResourceLocation vertUniformLoc = 
         new ResourceLocation(DepthShot.MODID, "shaders/depthmap.vuni");
     private ResourceLocation vertCodeLoc = 
@@ -108,7 +111,10 @@ public class FrameCaptureHandler
         {
             mode = CaptureMode.Many;
             capture_remain = count;
+
             spotGenerator.reset();
+            last_pos = spotGenerator.getPos();
+            last_pitchyaw = spotGenerator.getRot();
         }
         DepthShotCore.logInfo("Will capture in " + mode.toString() + " : " + capture_remain);
     }
@@ -127,15 +133,19 @@ public class FrameCaptureHandler
             EntityPlayerSP player = DepthShotCore.mc.player;
             DepthShotCore.logInfo("Player was at : " + player.posX + " " + player.posY + " " + player.posZ);
             spotGenerator.next();
-            Vec3d pos = spotGenerator.getPos();
-            Vec2f rot = spotGenerator.getRot();
-            
-            DepthShotCore.logInfo("Moving player to : " + pos.x + " " + pos.y + " " + pos.z);
-            DepthShotCore.logInfo("Rotating player to : " + rot.x + " " + rot.y);
-            //DepthShotCore.mc.player.setPosition(pos.x, pos.y, pos.z);
-            DepthShotCore.mc.player.setLocationAndAngles(pos.x, pos.y, pos.z, rot.y, rot.x);
+            last_pos = spotGenerator.getPos();
+            last_pitchyaw = spotGenerator.getRot();
+            DepthShotCore.logInfo("Moving player to : " + last_pos.x + " " + last_pos.y + " " + last_pos.z);
+            DepthShotCore.logInfo("Rotating player to : " + last_pitchyaw.x + " " + last_pitchyaw.y);
 
             need_move = false;
+        }
+
+        if(captureState != CaptureState.Idle)
+        {
+            last_pos = spotGenerator.getPos();
+            last_pitchyaw = spotGenerator.getRot();
+            DepthShotCore.mc.player.setLocationAndAngles(last_pos.x, last_pos.y, last_pos.z, last_pitchyaw.y, last_pitchyaw.x);
         }
     }
 
@@ -145,38 +155,35 @@ public class FrameCaptureHandler
         // do action on state
         if (captureState == CaptureState.CaptureScreen)
         {
-            String filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.hashCurrentInfo() + "_screen.png";
+            String folderpath = DepthShotCore.config.getSavePath() + "/screenimg/";
+            String filepath = DepthShotCore.hashCurrentInfo(last_pos, last_pitchyaw) + ".png";
             DepthShotCore.logInfo("Start capturing screenshot");
 
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            boolean success = captureScreenShot(width, height, filepath);
-            if(success)
-            {
-                DepthShotCore.logInfo("Capturing screenshot success: " + filepath);
-            }
-            else
+            boolean success = captureScreenShot(width, height, folderpath + filepath);
+            if(!success)
             {
                 DepthShotCore.logInfo("Capturing screenshot failed");
             }
         }
         else if(captureState == CaptureState.CaptureDepth)
         {
-            String image_filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.hashCurrentInfo() + "_depth.png";
-            String raw_filepath = DepthShotCore.config.getSavePath() + "/" + DepthShotCore.hashCurrentInfo() + "_depth.dat";
+            String depthimg_folderpath = DepthShotCore.config.getSavePath() + "/depthimg/";
+            String depthmap_folderpath = DepthShotCore.config.getSavePath() + "/depthmap/";
+
+            String depthimg_filepath = DepthShotCore.hashCurrentInfo(last_pos, last_pitchyaw) + ".png";
+            String depthmap_filepath = DepthShotCore.hashCurrentInfo(last_pos, last_pitchyaw) + ".dat";
             DepthShotCore.logInfo("Start capturing depthmap");
 
             int width = DepthShotCore.mc.displayWidth;
             int height = DepthShotCore.mc.displayHeight;
 
-            boolean success = captureDepthmap(width, height, image_filepath, "PNG");
-            success = success & captureDepthmap(width, height, raw_filepath, "DAT");
-            if(success)
-            {
-                DepthShotCore.logInfo("Capturing depthmap success: " + image_filepath);
-            }
-            else
+            boolean success = captureDepthmap(width, height, depthimg_folderpath + depthimg_filepath, "PNG");
+            success = success & captureDepthmap(width, height, depthmap_folderpath + depthmap_filepath, "DAT");
+            
+            if(!success)
             {
                 DepthShotCore.logInfo("Capturing depthmap failed");
             }
@@ -288,7 +295,6 @@ public class FrameCaptureHandler
             }
         }
 
-        
         try {
             ImageIO.write(screen_image, "PNG", screen_file);
             return true;

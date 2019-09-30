@@ -11,6 +11,8 @@ import org.lwjgl.input.Keyboard;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -95,16 +97,15 @@ public class DepthShotCore {
             logger.error("[DS] " + message);
     }
 
-    public static String hashCurrentInfo()
+    public static String hashCurrentInfo(Vec3d pos, Vec2f pitchyaw)
     {
         String prefix = "h";
 
-        prefix += (int)(mc.player.getPitchYaw().x) + "_";
-        prefix += (int)(mc.player.getPitchYaw().y % 360) + "_";
-        prefix += (int)(mc.player.posX) + "_";
-        prefix += (int)(mc.player.posY) + "_";
-        prefix += (int)(mc.player.posZ) + "_";
-
+        prefix += (int)(pitchyaw.x) + "_";
+        prefix += (int)(pitchyaw.y % 360) + "_";
+        prefix += (int)(pos.x) + "_";
+        prefix += (int)(pos.y) + "_";
+        prefix += (int)(pos.z);
 
         return prefix;
     }

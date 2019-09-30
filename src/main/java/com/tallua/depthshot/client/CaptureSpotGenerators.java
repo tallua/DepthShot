@@ -57,6 +57,8 @@ public class CaptureSpotGenerators {
         int lastX = 0;
         int lastY = 0;
         int lastZ = 0;
+        int lastPitch = 0;
+        int lastYaw = 0;
 
         int dir = 0;
         int dir_count = 0;
@@ -65,9 +67,11 @@ public class CaptureSpotGenerators {
         @Override
         public void reset()
         {
-            lastX = (int)Minecraft.getMinecraft().player.posX;
-            lastY = (int)Minecraft.getMinecraft().player.posY;
-            lastZ = (int)Minecraft.getMinecraft().player.posZ;
+            lastX = (int)DepthShotCore.mc.player.posX;
+            lastY = (int)DepthShotCore.mc.player.posY;
+            lastZ = (int)DepthShotCore.mc.player.posZ;
+            lastPitch = (int)DepthShotCore.mc.player.getPitchYaw().x;
+            lastYaw = (int)DepthShotCore.mc.player.getPitchYaw().y;
             
             dir = 0;
             dir_count = 0;
@@ -113,6 +117,8 @@ public class CaptureSpotGenerators {
             lastX = result.getX();
             lastY = result.getY();
             lastZ = result.getZ();
+            lastPitch = rand.nextInt(115) - 35;
+            lastYaw = rand.nextInt(360);
 
             IBlockState block = DepthShotCore.mc.world.getBlockState(new BlockPos(result));
             DepthShotCore.logInfo("Block at " + result + " : " + (block.isBlockNormalCube()));
@@ -128,10 +134,8 @@ public class CaptureSpotGenerators {
 
         @Override
         public Vec2f getRot() {
-            int pitch = rand.nextInt(125) - 45;
-            int yaw = rand.nextInt(360);
 
-            return new Vec2f(pitch, yaw);
+            return new Vec2f(lastPitch, lastYaw);
         }
         
     }
