@@ -1,7 +1,5 @@
 package com.tallua.depthshot;
 
-import java.io.File;
-
 import com.tallua.depthshot.client.FrameCaptureComHandler;
 import com.tallua.depthshot.client.FrameCaptureHandler;
 import com.tallua.depthshot.client.FrameCaptureKeyHandler;
@@ -108,39 +106,5 @@ public class DepthShotCore {
         prefix += (int)(pos.z);
 
         return prefix;
-    }
-
-    public static File createNewFile(String filepath)
-    {
-        File file = new File(filepath);
-        if(!file.isFile())
-        {
-            try{
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-            } 
-            catch(Exception e)
-            {
-                logError("Failed on creating file : " + filepath);
-                file = null;
-                e.printStackTrace(); 
-            } 
-        }
-        else
-        {
-            try
-            {
-                file.delete();
-                file.createNewFile();
-            }
-            catch(Exception e)
-            {
-                logError("Failed on recreating file : " + filepath);
-                file = null;
-                e.printStackTrace(); 
-            } 
-        }
-        
-        return file;
     }
 }

@@ -39,13 +39,25 @@ public class DepthShotConfigHandler
         return prop.getString();
     }
 
-    
+    public int getInteger(String key, int def)
+    {
+        Property prop = config.get("DepthShot", key, def);
+        if(config.hasChanged())
+            config.save();
+
+        return prop.getInt(def);
+    }
 
 
 
     public String getSavePath()
     {
         return getString("save_path", "D:/temp/");
+    }
+
+    public int getCooldown()
+    {
+        return getInteger("cooldown", 40);
     }
 }
 
